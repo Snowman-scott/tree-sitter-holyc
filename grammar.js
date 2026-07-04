@@ -113,6 +113,7 @@ module.exports = grammar({
       'ADD', 'SUB', 'MUL', 'DIV', 'CMP', 'TEST',
       'JE', 'JNE', 'JZ', 'JNZ', 'JG', 'JL', 'NOP',
       'LEA', 'INT', 'XOR', 'AND', 'OR', 'NOT', 'SHL', 'SHR',
+      'SYSCALL',
     ),
 
     asm_operand: $ => choice(
@@ -122,7 +123,7 @@ module.exports = grammar({
       seq('[', $._expression, ']'),
     ),
 
-    register: $ => /R[A-Z0-9]{1,3}|E[A-Z]{2}|[A-D][LH]/,
+    register: $ => token(prec(2, /R[A-Z0-9]{1,3}|E[A-Z]{2}|[A-D][LH]/)),
 
     // ---------- Control flow ----------
     if_statement: $ => prec.right(seq(

@@ -646,6 +646,10 @@
         {
           "type": "STRING",
           "value": "SHR"
+        },
+        {
+          "type": "STRING",
+          "value": "SYSCALL"
         }
       ]
     },
@@ -684,8 +688,15 @@
       ]
     },
     "register": {
-      "type": "PATTERN",
-      "value": "R[A-Z0-9]{1,3}|E[A-Z]{2}|[A-D][LH]"
+      "type": "TOKEN",
+      "content": {
+        "type": "PREC",
+        "value": 2,
+        "content": {
+          "type": "PATTERN",
+          "value": "R[A-Z0-9]{1,3}|E[A-Z]{2}|[A-D][LH]"
+        }
+      }
     },
     "if_statement": {
       "type": "PREC_RIGHT",

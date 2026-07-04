@@ -1332,6 +1332,10 @@
     "named": false
   },
   {
+    "type": "SYSCALL",
+    "named": false
+  },
+  {
     "type": "TEST",
     "named": false
   },

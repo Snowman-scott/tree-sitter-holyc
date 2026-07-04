@@ -3,10 +3,8 @@
  * @author Epicwoman212
  * @license AGPL
  */
-
 /// <reference types="tree-sitter-cli/dsl" />
 // @ts-check
-
 module.exports = grammar({
   name: 'holyc',
 
@@ -28,6 +26,7 @@ module.exports = grammar({
     _statement: $ => choice(
       $.function_definition,
       $.declaration,
+      $.extern_declaration,
       $.asm_block,
       $.if_statement,
       $.while_statement,
@@ -44,7 +43,7 @@ module.exports = grammar({
     _type: $ => choice(
       'I8', 'I16', 'I32', 'I64',
       'U8', 'U16', 'U32', 'U64',
-      'F64', 'Bool', 'Char', 'Void',
+      'F64', 'Bool', 'Char', 'Void', 'U0',
       $.identifier, // user-defined classes/structs
     ),
 
@@ -52,12 +51,24 @@ module.exports = grammar({
       $._type,
       optional(repeat('*')),
       $.identifier,
+      optional(seq('[', optional($._expression), ']')),
       optional(seq('=', $._expression)),
+      ';',
+    ),
+
+    extern_declaration: $ => seq(
+      'extern',
+      $.string,
+      $._type,
+      optional(repeat('*')),
+      $.identifier,
+      $.parameter_list,
       ';',
     ),
 
     function_definition: $ => seq(
       $._type,
+      optional(repeat('*')),
       $.identifier,
       $.parameter_list,
       $.compound_statement,
@@ -69,7 +80,12 @@ module.exports = grammar({
       ')',
     ),
 
-    parameter: $ => seq($._type, optional('*'), $.identifier),
+    parameter: $ => seq(
+      $._type,
+      optional(repeat('*')),
+      $.identifier,
+      optional(seq('[', optional($._expression), ']')),
+    ),
 
     class_definition: $ => seq(
       'class',
@@ -133,8 +149,12 @@ module.exports = grammar({
       $.identifier,
       $.number,
       $.string,
+      $.char,
       $.call_expression,
       $.binary_expression,
+      $.unary_expression,
+      $.postfix_expression,
+      $.subscript_expression,
       $.assignment_expression,
       seq('(', $._expression, ')'),
     ),
@@ -148,18 +168,42 @@ module.exports = grammar({
 
     binary_expression: $ => prec.left(1, seq(
       $._expression,
-      choice('+', '-', '*', '/', '==', '!=', '<', '>', '<=', '>=', '&&', '||'),
+      choice(
+        '+', '-', '*', '/', '%',
+        '==', '!=', '<', '>', '<=', '>=',
+        '&&', '||', '<<', '>>', '&', '|', '^',
+      ),
       $._expression,
     )),
 
+    unary_expression: $ => prec(10, seq(
+      choice('*', '&', '!', '~', '-', '++', '--'),
+      $._expression,
+    )),
+
+    postfix_expression: $ => prec(11, seq(
+      $._expression,
+      choice('++', '--'),
+    )),
+
+    subscript_expression: $ => prec(12, seq(
+      $._expression,
+      '[',
+      $._expression,
+      ']',
+    )),
+
     assignment_expression: $ => prec.right(0, seq(
-      $._expression, '=', $._expression,
+      $._expression,
+      choice('=', '+=', '-=', '*=', '/=', '%=', '^=', '&=', '|=', '<<=', '>>='),
+      $._expression,
     )),
 
     // ---------- Literals ----------
     identifier: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
     number: $ => /\d+(\.\d+)?/,
     string: $ => /"([^"\\]|\\.)*"/,
+    char: $ => /'([^'\\]|\\.)*'/,
     comment: $ => token(choice(
       seq('//', /.*/),
       seq('/*', /[^*]*\*+([^/*][^*]*\*+)*/, '/'),

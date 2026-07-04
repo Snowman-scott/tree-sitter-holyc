@@ -57,7 +57,7 @@ module.exports = grammar({
     ),
 
     extern_declaration: $ => seq(
-      'extern',
+      choice('extern', '_extern'),
       $.string,
       $._type,
       optional(repeat('*')),
@@ -96,7 +96,7 @@ module.exports = grammar({
 
     // ---------- HolyC-specific: ASM block ----------
     asm_block: $ => seq(
-      'asm',
+      choice('asm', '_asm'),
       '{',
       repeat($.asm_instruction),
       '}',

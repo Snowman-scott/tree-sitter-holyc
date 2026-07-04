@@ -1384,6 +1384,14 @@
     "named": false
   },
   {
+    "type": "_asm",
+    "named": false
+  },
+  {
+    "type": "_extern",
+    "named": false
+  },
+  {
     "type": "asm",
     "named": false
   },
